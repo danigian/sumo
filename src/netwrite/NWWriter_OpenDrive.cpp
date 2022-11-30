@@ -129,10 +129,11 @@ NWWriter_OpenDrive::writeNetwork(const OptionsCont& oc, NBNetBuilder& nb) {
         for (size_t i = 0; i < crosswalks.size(); i++)
         {
             crosswalk_shape = crosswalks[i]->shape;
-            auto newvector1 = crosswalk_shape.getOrthogonal(crosswalk_shape[0], false, false, 4.0, -90);
-            auto newvector2 = crosswalk_shape.getOrthogonal(crosswalk_shape[1], false, true, 4.0, 90);
+            auto newvector1 = crosswalk_shape.getOrthogonal(crosswalk_shape[0], true, false, 4.0);
+            auto newvector2 = crosswalk_shape.getOrthogonal(crosswalk_shape[1], true, false, 4.0);
             crosswalk_shape.push_back(newvector2[1]);
             crosswalk_shape.push_back(newvector1[1]);
+
             nb.getShapeCont().addPolygon(crosswalks[i]->id, "crosswalk", RGBColor::BLACK, 0, Shape::DEFAULT_ANGLE, Shape::DEFAULT_IMG_FILE, Shape::DEFAULT_RELATIVEPATH, crosswalk_shape, false, true, 1, true, crosswalks[i]->edges[0]->getID());
             crosswalksByEdge[crosswalks[i]->edges[0]->getID()].push_back(crosswalks[i]->id);
         }
