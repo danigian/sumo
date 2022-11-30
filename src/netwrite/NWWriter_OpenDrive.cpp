@@ -1238,7 +1238,7 @@ NWWriter_OpenDrive::writeRoadObjectPoly(OutputDevice& device, const NBEdge* e, c
     device.writeAttr("type", shapeType);
     device.writeAttr("name", StringUtils::escapeXML(p->getParameter("name", ""), true));
     device.writeAttr("s", edgeOffset);
-    device.writeAttr("t", shapeType == "crosswalk" ? 0 : sideOffset);
+    device.writeAttr("t", sideOffset);
     device.writeAttr("hdg", -edgeAngle);
 
     //device.openTag("outlines");
