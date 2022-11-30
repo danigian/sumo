@@ -259,8 +259,20 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
         if (n->knowsParameter("computePedestrianCrossing")) {
             auto incomingEdges = n->getIncomingEdges();
             auto outgoingEdges = n->getOutgoingEdges();
-            n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0]}, 4, false);
-
+            size_t incomingEdgesNo = incomingEdges.size();
+            size_t outgoingEdgesNo = outgoingEdges.size();
+            if (incomingEdgesNo == outgoingEdgesNo) {
+                if (incomingEdgesNo > 2) {
+                    for (size_t i = 0; i < incomingEdges.size(); i++)
+                    {
+                        n->addCrossing(EdgeVector{ incomingEdges[i], outgoingEdges[i] }, 4, false);
+                    }
+                }
+                else {
+                    n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0] }, 4, false);
+                }
+            }
+            n->unsetParameter("computePedestrianCrossing");
         }
     }
 
