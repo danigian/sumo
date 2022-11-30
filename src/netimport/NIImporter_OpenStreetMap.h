@@ -76,6 +76,7 @@ protected:
             :
             id(_id), lon(_lon), lat(_lat), ele(0.),
             tlsControlled(false),
+            pedestrianCrossing(false),
             railwayCrossing(false),
             railwaySignal(false),
             railwayBufferStop(false),
@@ -94,6 +95,8 @@ protected:
         double ele;
         /// @brief Whether this is a tls controlled junction
         bool tlsControlled;
+        /// @brief Whether this is a pedestrian crossing
+        bool pedestrianCrossing;
         /// @brief Whether this is a railway crossing
         bool railwayCrossing;
         /// @brief Whether this is a railway (main) signal
