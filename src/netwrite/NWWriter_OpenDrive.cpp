@@ -134,7 +134,9 @@ NWWriter_OpenDrive::writeNetwork(const OptionsCont& oc, NBNetBuilder& nb) {
             crosswalk_shape.push_back(newvector2[1]);
             crosswalk_shape.push_back(newvector1[1]);
 
-            nb.getShapeCont().addPolygon(crosswalks[i]->id, "crosswalk", RGBColor::BLACK, 0, Shape::DEFAULT_ANGLE, Shape::DEFAULT_IMG_FILE, Shape::DEFAULT_RELATIVEPATH, crosswalk_shape, false, true, 1, true, crosswalks[i]->edges[0]->getID());
+            nb.getShapeCont().addPolygon(crosswalks[i]->id, "crosswalk", 
+                                         RGBColor::BLACK, 0, Shape::DEFAULT_ANGLE, Shape::DEFAULT_IMG_FILE, Shape::DEFAULT_RELATIVEPATH, 
+                                         crosswalk_shape, false, true, 1, false, crosswalks[i]->edges[0]->getID());
             crosswalksByEdge[crosswalks[i]->edges[0]->getID()].push_back(crosswalks[i]->id);
         }
     }
@@ -1230,12 +1232,13 @@ NWWriter_OpenDrive::writeRoadObjectPoly(OutputDevice& device, const NBEdge* e, c
     //    << " center=" << center
     //    << " edgeOffset=" << edgeOffset
     //    << "\n";
+    auto shapeType = p->getShapeType();
     device.openTag("object");
     device.writeAttr("id", p->getID());
-    device.writeAttr("type", p->getShapeType());
+    device.writeAttr("type", shapeType);
     device.writeAttr("name", StringUtils::escapeXML(p->getParameter("name", ""), true));
     device.writeAttr("s", edgeOffset);
-    device.writeAttr("t", sideOffset);
+    device.writeAttr("t", shapeType == "crosswalk" ? 0 : sideOffset);
     device.writeAttr("hdg", -edgeAngle);
 
     //device.openTag("outlines");
