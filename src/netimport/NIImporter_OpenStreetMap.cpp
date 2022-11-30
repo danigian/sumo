@@ -210,7 +210,7 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
     }
     // Mark which nodes are used by traffic lights
     for (const auto& nodesIt : myOSMNodes) {
-        if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal /* || nodesIt->second->railwayCrossing*/) {
+        if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal || nodesIt.second->pedestrianCrossing /* || nodesIt->second->railwayCrossing*/) {
             // If the key is not found in the map, the value is automatically
             // initialized with 0.
             nodeUsage[nodesIt.first]++;
@@ -252,6 +252,16 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
             running = -1;
         }
         insertEdge(e, running, currentFrom, last, passed, nb, first, last);
+    }
+
+    for (const auto& nodeIt : nc) {
+        NBNode* const n = nodeIt.second;
+        if (n->knowsParameter("computePedestrianCrossing")) {
+            auto incomingEdges = n->getIncomingEdges();
+            auto outgoingEdges = n->getOutgoingEdges();
+            n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0]}, 4, false);
+
+        }
     }
 
     const double layerElevation = oc.getFloat("osm.layer-elevation");
@@ -331,6 +341,9 @@ NIImporter_OpenStreetMap::insertNodeChecking(long long int id, NBNodeCont& nc, N
                 delete tlDef;
                 throw ProcessError("Could not allocate tls '" + toString(id) + "'.");
             }
+        }
+        else if (n->pedestrianCrossing) {
+            node->setParameter("computePedestrianCrossing", "true");
         }
         if (n->railwayBufferStop) {
             node->setParameter("buffer_stop", "true");
@@ -812,6 +825,8 @@ NIImporter_OpenStreetMap::NodesHandler::myStartElement(int element, const SUMOSA
                 myCurrentNode->tlsControlled = true;
             } else if (key == "crossing" && value.find("traffic_signals") != std::string::npos) {
                 myCurrentNode->tlsControlled = true;
+            } else if (key == "highway" && value.find("crossing") != std::string::npos){
+                myCurrentNode->pedestrianCrossing = true;
             } else if ((key == "noexit" && value == "yes")
                        || (key == "railway" && value == "buffer_stop")) {
                 myCurrentNode->railwayBufferStop = true;
