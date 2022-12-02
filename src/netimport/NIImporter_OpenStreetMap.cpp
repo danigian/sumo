@@ -261,10 +261,10 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
 
     for (const auto& nodeIt : nc) {
         NBNode* const n = nodeIt.second;
-        if (n->knowsParameter("computePedestrianCrossing")) {
-            EdgeVector incomingEdges = n->getIncomingEdges();
-            EdgeVector outgoingEdges = n->getOutgoingEdges();
-            size_t incomingEdgesNo = incomingEdges.size();
+		if (n->knowsParameter("computePedestrianCrossing")) {
+			EdgeVector incomingEdges = n->getIncomingEdges();
+			EdgeVector outgoingEdges = n->getOutgoingEdges();
+			size_t incomingEdgesNo = incomingEdges.size();
 			if (incomingEdgesNo == outgoingEdges.size() && incomingEdgesNo > 2) {
 				for (size_t i = 0; i < incomingEdges.size(); i++)
 				{
@@ -274,9 +274,9 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
 			else {
 				n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0] }, crossingWidth, false);
 			}
-            n->unsetParameter("computePedestrianCrossing");
-        }
-    }
+			n->unsetParameter("computePedestrianCrossing");
+		}
+	}
 
     const double layerElevation = oc.getFloat("osm.layer-elevation");
     if (layerElevation > 0) {
