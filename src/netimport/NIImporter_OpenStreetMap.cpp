@@ -208,7 +208,7 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
             nodeUsage[node]++;
         }
     }
-    // Mark which nodes are used by traffic lights
+    // Mark which nodes are used by traffic lights or are pedestrian crossings
     for (const auto& nodesIt : myOSMNodes) {
         if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal || nodesIt.second->pedestrianCrossing /* || nodesIt->second->railwayCrossing*/) {
             // If the key is not found in the map, the value is automatically
@@ -254,24 +254,26 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
         insertEdge(e, running, currentFrom, last, passed, nb, first, last);
     }
 
+    /* After edges are instantiated
+     * nodes are parsed again to add pedestrian crossings to them
+     */
+    const double crossingWidth = OptionsCont::getOptions().getFloat("default.crossing-width");
+
     for (const auto& nodeIt : nc) {
         NBNode* const n = nodeIt.second;
         if (n->knowsParameter("computePedestrianCrossing")) {
-            auto incomingEdges = n->getIncomingEdges();
-            auto outgoingEdges = n->getOutgoingEdges();
+            EdgeVector incomingEdges = n->getIncomingEdges();
+            EdgeVector outgoingEdges = n->getOutgoingEdges();
             size_t incomingEdgesNo = incomingEdges.size();
-            size_t outgoingEdgesNo = outgoingEdges.size();
-            if (incomingEdgesNo == outgoingEdgesNo) {
-                if (incomingEdgesNo > 2) {
-                    for (size_t i = 0; i < incomingEdges.size(); i++)
-                    {
-                        n->addCrossing(EdgeVector{ incomingEdges[i], outgoingEdges[i] }, 4, false);
-                    }
-                }
-                else {
-                    n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0] }, 4, false);
-                }
-            }
+			if (incomingEdgesNo == outgoingEdges.size() && incomingEdgesNo > 2) {
+				for (size_t i = 0; i < incomingEdges.size(); i++)
+				{
+					n->addCrossing(EdgeVector{ incomingEdges[i], outgoingEdges[i] }, crossingWidth, false);
+				}
+			}
+			else {
+				n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0] }, crossingWidth, false);
+			}
             n->unsetParameter("computePedestrianCrossing");
         }
     }
