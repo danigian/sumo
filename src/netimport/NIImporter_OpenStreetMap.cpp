@@ -210,7 +210,7 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
     }
     // Mark which nodes are used by traffic lights or are pedestrian crossings
     for (const auto& nodesIt : myOSMNodes) {
-        if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal || nodesIt.second->pedestrianCrossing /* || nodesIt->second->railwayCrossing*/) {
+        if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal || (nodesIt.second->pedestrianCrossing && myImportSidewalks) /* || nodesIt->second->railwayCrossing*/) {
             // If the key is not found in the map, the value is automatically
             // initialized with 0.
             nodeUsage[nodesIt.first]++;
