@@ -135,7 +135,8 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
 
     myImportLaneAccess = oc.getBool("osm.lane-access");
     myImportTurnSigns = oc.getBool("osm.turn-lanes");
-    myImportSidewalks = oc.getBool("osm.sidewalks");
+    myImportSidewalks = OptionsCont::getOptions().getBool("osm.sidewalks");
+    myCrossingsGuess = oc.getBool("crossings.guess");
 
     // load nodes, first
     NodesHandler nodesHandler(myOSMNodes, myUniqueNodes, oc);
@@ -210,7 +211,7 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
     }
     // Mark which nodes are used by traffic lights or are pedestrian crossings
     for (const auto& nodesIt : myOSMNodes) {
-        if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal || (nodesIt.second->pedestrianCrossing && myImportSidewalks) /* || nodesIt->second->railwayCrossing*/) {
+        if (nodesIt.second->tlsControlled || nodesIt.second->railwaySignal || (nodesIt.second->pedestrianCrossing && myImportSidewalks && !myCrossingsGuess) /* || nodesIt->second->railwayCrossing*/) {
             // If the key is not found in the map, the value is automatically
             // initialized with 0.
             nodeUsage[nodesIt.first]++;
@@ -254,9 +255,10 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
         insertEdge(e, running, currentFrom, last, passed, nb, first, last);
     }
 
-    if (myImportSidewalks) {
+    if (myImportSidewalks && !myCrossingsGuess) {
         /* After edges are instantiated
          * nodes are parsed again to add pedestrian crossings to them
+         * This is only executed if crossings are imported and not guessed
          */
         const double crossingWidth = OptionsCont::getOptions().getFloat("default.crossing-width");
 
