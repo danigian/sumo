@@ -254,30 +254,34 @@ NIImporter_OpenStreetMap::load(const OptionsCont& oc, NBNetBuilder& nb) {
         insertEdge(e, running, currentFrom, last, passed, nb, first, last);
     }
 
-    /* After edges are instantiated
-     * nodes are parsed again to add pedestrian crossings to them
-     */
-    const double crossingWidth = OptionsCont::getOptions().getFloat("default.crossing-width");
+    if (myImportSidewalks) {
+        /* After edges are instantiated
+         * nodes are parsed again to add pedestrian crossings to them
+         */
+        const double crossingWidth = OptionsCont::getOptions().getFloat("default.crossing-width");
 
-    for (const auto& nodeIt : nc) {
-        NBNode* const n = nodeIt.second;
-		if (n->knowsParameter("computePedestrianCrossing")) {
-			EdgeVector incomingEdges = n->getIncomingEdges();
-			EdgeVector outgoingEdges = n->getOutgoingEdges();
-			size_t incomingEdgesNo = incomingEdges.size();
-			if (incomingEdgesNo == outgoingEdges.size() && incomingEdgesNo > 2) {
-				for (size_t i = 0; i < incomingEdges.size(); i++)
-				{
-					n->addCrossing(EdgeVector{ incomingEdges[i], outgoingEdges[i] }, crossingWidth, false);
-				}
-			}
-			else {
-				n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0] }, crossingWidth, false);
-			}
-			n->unsetParameter("computePedestrianCrossing");
-		}
-	}
-
+        for (const auto& nodeIt : nc) {
+            NBNode* const n = nodeIt.second;
+            if (n->knowsParameter("computePedestrianCrossing")) {
+                EdgeVector incomingEdges = n->getIncomingEdges();
+                EdgeVector outgoingEdges = n->getOutgoingEdges();
+                size_t incomingEdgesNo = incomingEdges.size();
+                size_t outgoingEdgesNo = outgoingEdges.size();
+                if (incomingEdgesNo == outgoingEdgesNo && incomingEdgesNo > 2) {
+                    for (size_t i = 0; i < incomingEdges.size(); i++)
+                    {
+                        n->addCrossing(EdgeVector{ incomingEdges[i], outgoingEdges[i] }, crossingWidth, false);
+                    }
+                }
+                else if (incomingEdgesNo > 0 && outgoingEdgesNo > 0)
+                {
+                    n->addCrossing(EdgeVector{ incomingEdges[0], outgoingEdges[0] }, crossingWidth, false);
+                }
+                n->unsetParameter("computePedestrianCrossing");
+            }
+        }
+    }
+    
     const double layerElevation = oc.getFloat("osm.layer-elevation");
     if (layerElevation > 0) {
         reconstructLayerElevation(layerElevation, nb);
@@ -356,7 +360,7 @@ NIImporter_OpenStreetMap::insertNodeChecking(long long int id, NBNodeCont& nc, N
                 throw ProcessError("Could not allocate tls '" + toString(id) + "'.");
             }
         }
-        else if (n->pedestrianCrossing) {
+        else if (n->pedestrianCrossing && myImportSidewalks) {
             node->setParameter("computePedestrianCrossing", "true");
         }
         if (n->railwayBufferStop) {
