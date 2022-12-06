@@ -420,7 +420,7 @@ NIImporter_OpenStreetMap::insertNodeChecking(long long int id, NBNodeCont& nc, N
                 throw ProcessError("Could not allocate tls '" + toString(id) + "'.");
             }
         }
-        else if (n->pedestrianCrossing && myImportSidewalks) {
+        else if (n->pedestrianCrossing && myImportCrossings) {
             node->setParameter("computePedestrianCrossing", "true");
         }
         if (n->railwayBufferStop) {
